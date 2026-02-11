@@ -1,0 +1,360 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Analysis",
+  "description": "Research analysis output containing 8 deliverables, headline findings, and strategic implications.",
+  "type": "object",
+  "required": [
+    "metadata",
+    "deliverables",
+    "headline_findings",
+    "strategic_implications",
+    "confidence_methodology_note"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["domain_name", "total_respondents", "analysis_timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "domain_name": { "type": "string" },
+        "total_respondents": { "type": "integer" },
+        "analysis_timestamp": { "type": "string" }
+      }
+    },
+    "deliverables": {
+      "type": "object",
+      "required": [
+        "consensus_taxonomy_tree",
+        "entity_placement_map",
+        "micro_monopoly_dictionary",
+        "awareness_rankings",
+        "depth_map",
+        "expertise_divergence_report",
+        "recognition_gap_analysis",
+        "cct_analysis"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "consensus_taxonomy_tree": {
+          "type": "object",
+          "description": "Hierarchical category tree derived from pair-comparison consensus.",
+          "required": ["tree_structure", "interpretation", "confidence_notes"],
+          "properties": {
+            "tree_structure": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category_id", "label", "parent_id", "depth", "consensus_strength"],
+                "properties": {
+                  "category_id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "parent_id": { "type": ["string", "null"] },
+                  "depth": { "type": "integer" },
+                  "consensus_strength": { "type": "number" }
+                }
+              }
+            },
+            "interpretation": { "type": "string" },
+            "confidence_notes": { "type": "string" },
+            "transitivity_violations": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "entity_placement_map": {
+          "type": "object",
+          "description": "Entity-to-category mapping with primary/secondary assignments and boundary entities.",
+          "required": ["placements", "boundary_entities", "interpretation"],
+          "properties": {
+            "placements": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["entity_id", "label", "primary_category", "secondary_categories", "placement_consensus"],
+                "properties": {
+                  "entity_id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "primary_category": { "type": "object" },
+                  "secondary_categories": { "type": "array" },
+                  "placement_consensus": { "type": "number" }
+                }
+              }
+            },
+            "boundary_entities": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["entity_id", "label", "contested_categories", "multi_placement_rate"],
+                "properties": {
+                  "entity_id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "contested_categories": { "type": "array" },
+                  "multi_placement_rate": { "type": "number" }
+                }
+              },
+              "description": "Entities with high multi-placement rates or low placement consensus."
+            },
+            "interpretation": { "type": "string" }
+          }
+        },
+        "micro_monopoly_dictionary": {
+          "type": "object",
+          "description": "ALL entities with their 'owned' category and consensus descriptor. Covers every entity recognized by any respondent, not just pre-selected candidates.",
+          "required": ["entries", "interpretation"],
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["entity_id", "label", "owned_category", "consensus_strength", "runner_up_category", "descriptor", "descriptor_consensus_strength"],
+                "properties": {
+                  "entity_id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "owned_category": { "type": "object" },
+                  "consensus_strength": { "type": "number" },
+                  "runner_up_category": { "type": ["object", "null"] },
+                  "descriptor": {
+                    "type": "string",
+                    "description": "Consensus 3-5 word descriptor phrase capturing the entity's micro-monopoly positioning."
+                  },
+                  "descriptor_consensus_strength": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Proportion of respondents whose descriptor falls within the largest semantic cluster."
+                  }
+                }
+              }
+            },
+            "interpretation": { "type": "string" }
+          }
+        },
+        "awareness_rankings": {
+          "type": "object",
+          "description": "Ranked entity and category awareness with aided/unaided comparison.",
+          "required": ["entity_rankings", "category_rankings", "aided_unaided_gap", "interpretation"],
+          "properties": {
+            "entity_rankings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["rank", "entity_id", "label", "aided_rate", "unaided_smiths_s"],
+                "properties": {
+                  "rank": { "type": "integer" },
+                  "entity_id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "aided_rate": { "type": "number" },
+                  "unaided_smiths_s": { "type": ["number", "null"] }
+                }
+              }
+            },
+            "category_rankings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["rank", "category_id", "label", "recognition_rate"],
+                "properties": {
+                  "rank": { "type": "integer" },
+                  "category_id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "recognition_rate": { "type": "number" }
+                }
+              }
+            },
+            "aided_unaided_gap": { "type": "string" },
+            "interpretation": { "type": "string" }
+          }
+        },
+        "depth_map": {
+          "type": "object",
+          "description": "Perceived depth and boundary clarity per category.",
+          "required": ["categories", "interpretation"],
+          "properties": {
+            "categories": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category_id", "label", "mean_depth", "mean_clarity", "depth_clarity_ratio"],
+                "properties": {
+                  "category_id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "mean_depth": { "type": "number" },
+                  "mean_clarity": { "type": "number" },
+                  "depth_clarity_ratio": { "type": "number" }
+                }
+              }
+            },
+            "interpretation": { "type": "string" }
+          }
+        },
+        "expertise_divergence_report": {
+          "type": "object",
+          "description": "Where casual, professional, and insider respondents disagree on category structure.",
+          "required": ["divergence_points", "agreement_points", "interpretation"],
+          "properties": {
+            "divergence_points": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["dimension", "description", "casual_view", "professional_view", "insider_view"],
+                "properties": {
+                  "dimension": { "type": "string" },
+                  "description": { "type": "string" },
+                  "casual_view": { "type": "string" },
+                  "professional_view": { "type": "string" },
+                  "insider_view": { "type": "string" }
+                }
+              }
+            },
+            "agreement_points": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "interpretation": { "type": "string" }
+          }
+        },
+        "recognition_gap_analysis": {
+          "type": "object",
+          "description": "Entities and categories with significant gaps between aided and unaided recognition, or between expertise tiers.",
+          "required": ["entity_gaps", "category_gaps", "interpretation"],
+          "properties": {
+            "entity_gaps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["entity_id", "label", "gap_type", "gap_magnitude", "description"],
+                "properties": {
+                  "entity_id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "gap_type": { "type": "string", "enum": ["aided_unaided", "expertise_tier"] },
+                  "gap_magnitude": { "type": "number" },
+                  "description": { "type": "string" }
+                }
+              }
+            },
+            "category_gaps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category_id", "label", "gap_type", "gap_magnitude", "description"],
+                "properties": {
+                  "category_id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "gap_type": { "type": "string" },
+                  "gap_magnitude": { "type": "number" },
+                  "description": { "type": "string" }
+                }
+              }
+            },
+            "interpretation": { "type": "string" }
+          }
+        },
+        "cct_analysis": {
+          "type": "object",
+          "description": "Cultural Consensus Theory analysis. LLM-approximated eigenvalue ratios with appropriate caveats.",
+          "required": ["eigenvalue_ratio", "consensus_present", "agreement_coefficients", "caveats", "interpretation"],
+          "properties": {
+            "eigenvalue_ratio": {
+              "type": "number",
+              "description": "Ratio of first to second eigenvalue. >3:1 suggests cultural consensus."
+            },
+            "consensus_present": {
+              "type": "boolean",
+              "description": "Whether the eigenvalue ratio suggests consensus (>3:1)."
+            },
+            "agreement_coefficients": {
+              "type": "object",
+              "description": "Per-expertise-tier agreement coefficients.",
+              "properties": {
+                "overall": { "type": "number" },
+                "casual": { "type": "number" },
+                "professional": { "type": "number" },
+                "insider": { "type": "number" }
+              }
+            },
+            "caveats": {
+              "type": "string",
+              "description": "Explicit statement that eigenvalue computation is LLM-approximated, not matrix-factorized."
+            },
+            "interpretation": { "type": "string" }
+          }
+        }
+      }
+    },
+    "headline_findings": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "finding", "evidence", "confidence_assessment"],
+        "additionalProperties": false,
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "pattern": "^F[0-9]+$"
+          },
+          "finding": { "type": "string" },
+          "evidence": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1,
+            "description": "Specific data points supporting this finding."
+          },
+          "confidence_assessment": {
+            "type": "object",
+            "required": ["tier_agreement", "consensus_strength", "cross_question_corroboration", "confidence_level"],
+            "properties": {
+              "tier_agreement": {
+                "type": "boolean",
+                "description": "Do all three expertise tiers agree on this finding?"
+              },
+              "consensus_strength": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Strength of consensus behind this finding (0-1)."
+              },
+              "cross_question_corroboration": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Question IDs that corroborate this finding."
+              },
+              "confidence_level": {
+                "type": "string",
+                "enum": ["high", "moderate", "directional"],
+                "description": "high = all 3 criteria met, moderate = 2 of 3, directional = 0-1."
+              }
+            }
+          }
+        }
+      }
+    },
+    "strategic_implications": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["implication", "grounding_evidence", "affected_stakeholders"],
+        "properties": {
+          "implication": { "type": "string" },
+          "grounding_evidence": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "affected_stakeholders": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "confidence_methodology_note": {
+      "type": "string",
+      "description": "Explanation of the confidence framework: tier_agreement, consensus_strength, cross-question corroboration."
+    }
+  }
+}

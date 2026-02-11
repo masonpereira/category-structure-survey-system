@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Instrument Registry",
+  "description": "The hydrated 13-question category structure survey instrument, built from domain_config.json.",
+  "type": "object",
+  "required": ["metadata", "questions"],
+  "additionalProperties": false,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": [
+        "survey_title",
+        "domain_name",
+        "total_questions",
+        "entity_count",
+        "category_count",
+        "pair_count",
+        "block_count",
+        "generation_timestamp"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "survey_title": { "type": "string" },
+        "domain_name": { "type": "string" },
+        "total_questions": { "type": "integer", "const": 13 },
+        "entity_count": { "type": "integer" },
+        "category_count": { "type": "integer" },
+        "pair_count": { "type": "integer" },
+        "block_count": { "type": "integer" },
+        "generation_timestamp": { "type": "string" }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 13,
+      "maxItems": 13,
+      "items": {
+        "type": "object",
+        "required": ["id", "section", "text", "type", "required"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^Q([1-9]|1[0-3])$",
+            "description": "Question ID from Q1 to Q13."
+          },
+          "section": {
+            "type": "string",
+            "enum": [
+              "awareness_salience",
+              "category_recognition",
+              "hierarchy_perception",
+              "entity_placement",
+              "micro_monopoly",
+              "depth_perception",
+              "meta"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "description": "Full question text with domain placeholders resolved."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "multiple_choice",
+              "free_list",
+              "checklist",
+              "pair_comparison",
+              "entity_category_matrix",
+              "conditional_assignment",
+              "micro_monopoly_grid",
+              "scale",
+              "open_ended"
+            ]
+          },
+          "required": { "type": "boolean" },
+          "options": {
+            "type": "array",
+            "items": { "type": "object" },
+            "description": "Answer options (for multiple_choice, scale)."
+          },
+          "entity_ids": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^E[0-9]{3}$" },
+            "description": "Entity IDs presented in this question (block-scoped for Q4, Q7, Q8, Q9)."
+          },
+          "category_ids": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^C[0-9]{2}$" },
+            "description": "Category IDs presented in this question."
+          },
+          "pairs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["pair_id", "category_a_id", "category_b_id"],
+              "properties": {
+                "pair_id": { "type": "string", "pattern": "^P[0-9]{2}$" },
+                "category_a_id": { "type": "string", "pattern": "^C[0-9]{2}$" },
+                "category_b_id": { "type": "string", "pattern": "^C[0-9]{2}$" }
+              }
+            },
+            "description": "Category pairs for Q6."
+          },
+          "micro_monopoly_entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["entity_id", "candidate_category_ids"],
+              "properties": {
+                "entity_id": { "type": "string", "pattern": "^E[0-9]{3}$" },
+                "candidate_category_ids": {
+                  "type": "array",
+                  "items": { "type": "string", "pattern": "^C[0-9]{2}$" }
+                }
+              }
+            },
+            "description": "(Legacy) Fixed-list micro-monopoly grid entries for Q9. Retained for backward compatibility. The expanded Q9 now uses entity_ids (from Q4) and category_ids (from Q5) instead."
+          },
+          "descriptor_instruction": {
+            "type": "string",
+            "description": "Instruction text shown to respondents for writing a 3-5 word descriptor phrase capturing each entity's micro-monopoly positioning (e.g., 'In 3-5 words, describe what makes this brand unique within its category')."
+          },
+          "scale_range": {
+            "type": "object",
+            "properties": {
+              "min": { "type": "integer" },
+              "max": { "type": "integer" },
+              "min_label": { "type": "string" },
+              "max_label": { "type": "string" }
+            },
+            "description": "Scale parameters for scale-type questions."
+          },
+          "conditional_on": {
+            "type": "string",
+            "description": "Question ID that gates this question (e.g., Q7 is conditional on Q5, Q8 on Q7)."
+          },
+          "conditional_logic": {
+            "type": "string",
+            "description": "Description of the conditional rule."
+          }
+        }
+      }
+    }
+  }
+}

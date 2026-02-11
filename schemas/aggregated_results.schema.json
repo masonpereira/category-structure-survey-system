@@ -1,0 +1,525 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Aggregated Results",
+  "description": "Aggregated data from all respondent responses to the category structure survey.",
+  "type": "object",
+  "required": [
+    "metadata",
+    "entity_awareness",
+    "unaided_salience",
+    "category_recognition",
+    "pair_comparison_consensus",
+    "entity_placement",
+    "co_placement_matrix",
+    "micro_monopoly_results",
+    "depth_perception",
+    "boundary_clarity",
+    "structure_satisfaction",
+    "open_ended_themes",
+    "expertise_tier_breakdowns"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": [
+        "total_respondents",
+        "domain_name",
+        "block_sizes",
+        "expertise_counts",
+        "aggregation_timestamp"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "total_respondents": { "type": "integer" },
+        "domain_name": { "type": "string" },
+        "block_sizes": {
+          "type": "object",
+          "description": "Number of respondents per block. Keys are block IDs.",
+          "additionalProperties": { "type": "integer" }
+        },
+        "expertise_counts": {
+          "type": "object",
+          "required": ["casual", "professional", "insider"],
+          "properties": {
+            "casual": { "type": "integer" },
+            "professional": { "type": "integer" },
+            "insider": { "type": "integer" }
+          }
+        },
+        "aggregation_timestamp": { "type": "string" }
+      }
+    },
+    "entity_awareness": {
+      "type": "object",
+      "description": "Aided recognition rates per entity, using block-aware denominators (n_exposed).",
+      "required": ["entities"],
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["entity_id", "label", "n_exposed", "n_recognized", "recognition_rate"],
+            "properties": {
+              "entity_id": { "type": "string", "pattern": "^E[0-9]{3}$" },
+              "label": { "type": "string" },
+              "n_exposed": {
+                "type": "integer",
+                "description": "Number of respondents whose block included this entity."
+              },
+              "n_recognized": { "type": "integer" },
+              "recognition_rate": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "n_recognized / n_exposed."
+              },
+              "by_expertise": {
+                "type": "object",
+                "properties": {
+                  "casual": { "type": "object", "properties": { "n_exposed": {"type":"integer"}, "n_recognized": {"type":"integer"}, "rate": {"type":"number"} } },
+                  "professional": { "type": "object", "properties": { "n_exposed": {"type":"integer"}, "n_recognized": {"type":"integer"}, "rate": {"type":"number"} } },
+                  "insider": { "type": "object", "properties": { "n_exposed": {"type":"integer"}, "n_recognized": {"type":"integer"}, "rate": {"type":"number"} } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "unaided_salience": {
+      "type": "object",
+      "description": "Unaided entity recall analyzed via Smith's S statistic.",
+      "required": ["entities"],
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["entity_label", "mention_count", "mean_rank", "smiths_s"],
+            "properties": {
+              "entity_label": { "type": "string" },
+              "mention_count": { "type": "integer" },
+              "mean_rank": { "type": "number" },
+              "smiths_s": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Smith's S salience index (0-1). Accounts for frequency and rank."
+              }
+            }
+          }
+        }
+      }
+    },
+    "category_recognition": {
+      "type": "object",
+      "description": "Aided category recognition rates.",
+      "required": ["categories"],
+      "properties": {
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["category_id", "label", "n_total", "n_recognized", "recognition_rate"],
+            "properties": {
+              "category_id": { "type": "string", "pattern": "^C[0-9]{2}$" },
+              "label": { "type": "string" },
+              "n_total": { "type": "integer" },
+              "n_recognized": { "type": "integer" },
+              "recognition_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+              "by_expertise": {
+                "type": "object",
+                "properties": {
+                  "casual": { "type": "object", "properties": { "n": {"type":"integer"}, "rate": {"type":"number"} } },
+                  "professional": { "type": "object", "properties": { "n": {"type":"integer"}, "rate": {"type":"number"} } },
+                  "insider": { "type": "object", "properties": { "n": {"type":"integer"}, "rate": {"type":"number"} } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "pair_comparison_consensus": {
+      "type": "object",
+      "description": "Consensus on category hierarchy pairs, plus derived consensus tree and transitivity report.",
+      "required": ["pairs", "consensus_tree", "transitivity_report"],
+      "properties": {
+        "pairs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["pair_id", "category_a_id", "category_b_id", "results"],
+            "properties": {
+              "pair_id": { "type": "string", "pattern": "^P[0-9]{2}$" },
+              "category_a_id": { "type": "string" },
+              "category_b_id": { "type": "string" },
+              "results": {
+                "type": "object",
+                "required": ["A_contains_B", "B_contains_A", "peers", "no_opinion", "consensus_judgment", "consensus_strength"],
+                "properties": {
+                  "A_contains_B": { "type": "integer" },
+                  "B_contains_A": { "type": "integer" },
+                  "peers": { "type": "integer" },
+                  "no_opinion": { "type": "integer" },
+                  "consensus_judgment": {
+                    "type": "string",
+                    "enum": ["A_contains_B", "B_contains_A", "peers", "no_consensus"]
+                  },
+                  "consensus_strength": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Proportion of respondents choosing the consensus judgment."
+                  }
+                }
+              },
+              "by_expertise": { "type": "object" }
+            }
+          }
+        },
+        "consensus_tree": {
+          "type": "object",
+          "description": "Directed acyclic graph derived from pair consensus judgments. Nodes are categories, edges are parent→child.",
+          "required": ["nodes", "edges"],
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category_id", "label", "depth"],
+                "properties": {
+                  "category_id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "depth": { "type": "integer", "minimum": 0 }
+                }
+              }
+            },
+            "edges": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["parent_id", "child_id", "consensus_strength"],
+                "properties": {
+                  "parent_id": { "type": "string" },
+                  "child_id": { "type": "string" },
+                  "consensus_strength": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "transitivity_report": {
+          "type": "object",
+          "description": "Report on transitivity violations in the consensus tree.",
+          "required": ["is_transitive", "violations"],
+          "properties": {
+            "is_transitive": { "type": "boolean" },
+            "violations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["description", "categories_involved"],
+                "properties": {
+                  "description": { "type": "string" },
+                  "categories_involved": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "entity_placement": {
+      "type": "object",
+      "description": "Entity-to-category placement results from Q7 and Q8.",
+      "required": ["entities"],
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["entity_id", "label", "placement_distribution", "primary_category", "multi_placement_rate"],
+            "properties": {
+              "entity_id": { "type": "string" },
+              "label": { "type": "string" },
+              "placement_distribution": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["category_id", "count", "proportion"],
+                  "properties": {
+                    "category_id": { "type": "string" },
+                    "count": { "type": "integer" },
+                    "proportion": { "type": "number" }
+                  }
+                },
+                "description": "How many respondents placed this entity in each category."
+              },
+              "primary_category": {
+                "type": "object",
+                "required": ["category_id", "proportion"],
+                "properties": {
+                  "category_id": { "type": "string" },
+                  "proportion": { "type": "number" }
+                },
+                "description": "Most commonly assigned primary category from Q8."
+              },
+              "multi_placement_rate": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Proportion of respondents who placed this entity in 2+ categories."
+              }
+            }
+          }
+        }
+      }
+    },
+    "co_placement_matrix": {
+      "type": "object",
+      "description": "Category-by-category co-placement matrix. Cell (i,j) = number of entities placed in both category i and category j.",
+      "required": ["category_ids", "matrix"],
+      "properties": {
+        "category_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered list of category IDs forming the matrix axes."
+        },
+        "matrix": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": { "type": "integer" }
+          },
+          "description": "2D array; matrix[i][j] = co-placement count."
+        }
+      }
+    },
+    "micro_monopoly_results": {
+      "type": "object",
+      "description": "Results from Q9 expanded micro-monopoly grid. Covers ALL entities recognized by any respondent in Q4, not just pre-selected candidates.",
+      "required": ["entities"],
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["entity_id", "label", "category_distribution", "plurality_category", "consensus_strength", "consensus_descriptor", "descriptor_consensus_strength"],
+            "properties": {
+              "entity_id": { "type": "string" },
+              "label": { "type": "string" },
+              "category_distribution": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["category_id", "count", "proportion"],
+                  "properties": {
+                    "category_id": { "type": "string" },
+                    "count": { "type": "integer" },
+                    "proportion": { "type": "number" }
+                  }
+                }
+              },
+              "plurality_category": {
+                "type": "object",
+                "required": ["category_id", "proportion"],
+                "properties": {
+                  "category_id": { "type": "string" },
+                  "proportion": { "type": "number" }
+                }
+              },
+              "consensus_strength": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Proportion choosing the plurality category."
+              },
+              "consensus_descriptor": {
+                "type": "string",
+                "description": "The representative descriptor phrase from the largest semantic cluster (~80% semantic consensus target)."
+              },
+              "descriptor_consensus_strength": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Proportion of respondents whose descriptor falls within the largest semantic cluster."
+              },
+              "descriptor_clusters": {
+                "type": "array",
+                "description": "Semantic clusters of descriptor phrases provided by respondents.",
+                "items": {
+                  "type": "object",
+                  "required": ["representative_phrase", "cluster_size", "proportion", "sample_phrases"],
+                  "properties": {
+                    "representative_phrase": {
+                      "type": "string",
+                      "description": "The most representative phrase from this cluster."
+                    },
+                    "cluster_size": {
+                      "type": "integer",
+                      "description": "Number of respondents whose descriptor falls in this cluster."
+                    },
+                    "proportion": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "description": "Proportion of responding respondents in this cluster."
+                    },
+                    "sample_phrases": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "Example descriptor phrases from this cluster."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "depth_perception": {
+      "type": "object",
+      "description": "Aggregated depth perception ratings from Q10.",
+      "required": ["categories"],
+      "properties": {
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["category_id", "label", "mean_depth", "median_depth", "std_dev"],
+            "properties": {
+              "category_id": { "type": "string" },
+              "label": { "type": "string" },
+              "mean_depth": { "type": "number" },
+              "median_depth": { "type": "number" },
+              "std_dev": { "type": "number" },
+              "by_expertise": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    "boundary_clarity": {
+      "type": "object",
+      "description": "Aggregated boundary clarity ratings from Q11.",
+      "required": ["categories"],
+      "properties": {
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["category_id", "label", "mean_clarity", "median_clarity", "std_dev"],
+            "properties": {
+              "category_id": { "type": "string" },
+              "label": { "type": "string" },
+              "mean_clarity": { "type": "number" },
+              "median_clarity": { "type": "number" },
+              "std_dev": { "type": "number" },
+              "by_expertise": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    "structure_satisfaction": {
+      "type": "object",
+      "description": "Aggregated category structure satisfaction from Q12.",
+      "required": ["mean_score", "median_score", "std_dev", "distribution"],
+      "properties": {
+        "mean_score": { "type": "number" },
+        "median_score": { "type": "number" },
+        "std_dev": { "type": "number" },
+        "distribution": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["value", "count", "proportion"],
+            "properties": {
+              "value": { "type": "integer" },
+              "count": { "type": "integer" },
+              "proportion": { "type": "number" }
+            }
+          }
+        },
+        "by_expertise": { "type": "object" }
+      }
+    },
+    "open_ended_themes": {
+      "type": "object",
+      "description": "Thematic analysis of Q13 open-ended responses.",
+      "required": ["themes"],
+      "properties": {
+        "themes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["theme", "mention_count", "representative_verbatims"],
+            "properties": {
+              "theme": { "type": "string" },
+              "mention_count": { "type": "integer" },
+              "representative_verbatims": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["persona_id", "text"],
+                  "properties": {
+                    "persona_id": { "type": "string" },
+                    "text": { "type": "string" }
+                  }
+                },
+                "minItems": 2,
+                "maxItems": 5
+              }
+            }
+          }
+        }
+      }
+    },
+    "expertise_tier_breakdowns": {
+      "type": "object",
+      "description": "Cross-cutting expertise tier breakdowns for key metrics.",
+      "required": ["entity_awareness_by_tier", "category_recognition_by_tier", "multi_placement_rate_by_tier", "mean_satisfaction_by_tier"],
+      "properties": {
+        "entity_awareness_by_tier": {
+          "type": "object",
+          "description": "Mean entity recognition rate per tier.",
+          "properties": {
+            "casual": { "type": "number" },
+            "professional": { "type": "number" },
+            "insider": { "type": "number" }
+          }
+        },
+        "category_recognition_by_tier": {
+          "type": "object",
+          "properties": {
+            "casual": { "type": "number" },
+            "professional": { "type": "number" },
+            "insider": { "type": "number" }
+          }
+        },
+        "multi_placement_rate_by_tier": {
+          "type": "object",
+          "properties": {
+            "casual": { "type": "number" },
+            "professional": { "type": "number" },
+            "insider": { "type": "number" }
+          }
+        },
+        "mean_satisfaction_by_tier": {
+          "type": "object",
+          "properties": {
+            "casual": { "type": "number" },
+            "professional": { "type": "number" },
+            "insider": { "type": "number" }
+          }
+        }
+      }
+    }
+  }
+}

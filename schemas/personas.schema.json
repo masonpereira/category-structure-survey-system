@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Personas",
+  "description": "Synthetic respondent personas for a category structure survey, with expertise tiers, block assignments, and cognitive styles.",
+  "type": "object",
+  "required": ["metadata", "personas"],
+  "additionalProperties": false,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": [
+        "n_factor",
+        "domain_name",
+        "block_count",
+        "expertise_distribution",
+        "generation_timestamp"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "n_factor": { "type": "integer" },
+        "domain_name": { "type": "string" },
+        "block_count": { "type": "integer" },
+        "expertise_distribution": {
+          "type": "object",
+          "required": ["casual", "professional", "insider"],
+          "properties": {
+            "casual": { "type": "integer" },
+            "professional": { "type": "integer" },
+            "insider": { "type": "integer" }
+          }
+        },
+        "generation_timestamp": { "type": "string" }
+      }
+    },
+    "personas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "persona_id",
+          "assigned_block_id",
+          "expertise_tier",
+          "demographics",
+          "domain_relationship",
+          "cognitive_style",
+          "response_style"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "persona_id": {
+            "type": "string",
+            "pattern": "^R[0-9]{3}$",
+            "description": "Unique respondent identifier (R001-R100)."
+          },
+          "assigned_block_id": {
+            "type": "string",
+            "pattern": "^B[0-9]{1,2}$",
+            "description": "The entity block this respondent will see."
+          },
+          "expertise_tier": {
+            "type": "string",
+            "enum": ["casual", "professional", "insider"],
+            "description": "Respondent's level of domain expertise."
+          },
+          "demographics": {
+            "type": "object",
+            "required": ["age_range", "gender", "education_level", "geographic_region"],
+            "additionalProperties": false,
+            "properties": {
+              "age_range": {
+                "type": "string",
+                "enum": ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"]
+              },
+              "gender": {
+                "type": "string",
+                "enum": ["male", "female", "non-binary"]
+              },
+              "education_level": {
+                "type": "string",
+                "enum": ["high_school", "some_college", "bachelors", "masters", "doctorate"]
+              },
+              "geographic_region": {
+                "type": "string"
+              }
+            }
+          },
+          "domain_relationship": {
+            "type": "object",
+            "required": [
+              "engagement_frequency",
+              "engagement_breadth",
+              "information_sources",
+              "decision_context"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "engagement_frequency": {
+                "type": "string",
+                "enum": ["daily", "weekly", "monthly", "quarterly", "rarely"],
+                "description": "How often this person engages with the domain."
+              },
+              "engagement_breadth": {
+                "type": "string",
+                "enum": ["narrow", "moderate", "broad"],
+                "description": "How many entities/categories the person typically interacts with."
+              },
+              "information_sources": {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1,
+                "maxItems": 4,
+                "description": "Where this person gets domain information."
+              },
+              "decision_context": {
+                "type": "string",
+                "description": "Brief description of why/how this person makes domain-related decisions."
+              }
+            }
+          },
+          "cognitive_style": {
+            "type": "object",
+            "required": [
+              "categorization_tendency",
+              "hierarchy_preference",
+              "boundary_rigidity"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "categorization_tendency": {
+                "type": "string",
+                "enum": ["lumper", "splitter"],
+                "description": "Lumpers group broadly; splitters draw fine distinctions."
+              },
+              "hierarchy_preference": {
+                "type": "string",
+                "enum": ["flat", "moderate_hierarchy", "deep_hierarchy"],
+                "description": "Preference for hierarchical vs. flat category structures."
+              },
+              "boundary_rigidity": {
+                "type": "string",
+                "enum": ["rigid", "moderate", "fluid"],
+                "description": "How strictly this person enforces category boundaries."
+              }
+            }
+          },
+          "response_style": {
+            "type": "object",
+            "required": [
+              "checklist_selectivity",
+              "matrix_density",
+              "verbosity",
+              "scale_tendency"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "checklist_selectivity": {
+                "type": "string",
+                "enum": ["selective", "moderate", "inclusive"],
+                "description": "How many items the respondent checks on checklists."
+              },
+              "matrix_density": {
+                "type": "string",
+                "enum": ["sparse", "moderate", "dense"],
+                "description": "How many cells the respondent fills in entity-category matrices."
+              },
+              "verbosity": {
+                "type": "string",
+                "enum": ["terse", "moderate", "verbose"]
+              },
+              "scale_tendency": {
+                "type": "string",
+                "enum": ["central_tendency", "uses_full_range", "extreme_responder"]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

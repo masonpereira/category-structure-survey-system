@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Domain Configuration",
+  "description": "Input configuration defining the domain entities, categories, hierarchy pairs, entity blocks, and optional legacy micro-monopoly candidates for a category structure survey.",
+  "type": "object",
+  "required": [
+    "domain",
+    "entity_master_list",
+    "category_labels",
+    "category_pairs",
+    "entity_blocks",
+    "n_factor",
+    "expertise_distribution"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "domain": {
+      "type": "object",
+      "required": ["name", "description", "placeholders"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable domain name (e.g., 'Streaming Video Services')."
+        },
+        "description": {
+          "type": "string",
+          "description": "1-2 sentence description of the domain under study."
+        },
+        "placeholders": {
+          "type": "object",
+          "required": ["domain_term", "entity_term", "category_term"],
+          "additionalProperties": false,
+          "properties": {
+            "domain_term": {
+              "type": "string",
+              "description": "Generic term for the domain (e.g., 'streaming video')."
+            },
+            "entity_term": {
+              "type": "string",
+              "description": "Generic term for entities (e.g., 'service', 'brand', 'product')."
+            },
+            "category_term": {
+              "type": "string",
+              "description": "Generic term for categories (e.g., 'category', 'segment', 'type')."
+            }
+          }
+        }
+      }
+    },
+    "entity_master_list": {
+      "type": "array",
+      "description": "Complete list of entities in the domain. Each entity has an ID and label.",
+      "minItems": 80,
+      "maxItems": 120,
+      "items": {
+        "type": "object",
+        "required": ["entity_id", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "type": "string",
+            "pattern": "^E[0-9]{3}$",
+            "description": "Unique entity identifier (E001-E120)."
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable entity name."
+          }
+        }
+      },
+      "uniqueItems": true
+    },
+    "category_labels": {
+      "type": "array",
+      "description": "Category labels representing the mental taxonomy under study.",
+      "minItems": 25,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "required": ["category_id", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "category_id": {
+            "type": "string",
+            "pattern": "^C[0-9]{2}$",
+            "description": "Unique category identifier (C01-C30)."
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable category label."
+          }
+        }
+      },
+      "uniqueItems": true
+    },
+    "category_pairs": {
+      "type": "array",
+      "description": "Pairs of categories to be evaluated for hierarchical relationship.",
+      "minItems": 15,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["pair_id", "category_a_id", "category_b_id"],
+        "additionalProperties": false,
+        "properties": {
+          "pair_id": {
+            "type": "string",
+            "pattern": "^P[0-9]{2}$",
+            "description": "Unique pair identifier (P01-P20)."
+          },
+          "category_a_id": {
+            "type": "string",
+            "pattern": "^C[0-9]{2}$"
+          },
+          "category_b_id": {
+            "type": "string",
+            "pattern": "^C[0-9]{2}$"
+          }
+        }
+      },
+      "uniqueItems": true
+    },
+    "micro_monopoly_candidates": {
+      "type": "array",
+      "description": "(Optional / Legacy) Pre-selected entities with candidate categories for the old fixed-list Q9. Retained for backward compatibility. The expanded Q9 now derives its entity list from Q4 recognition and category list from Q5 recognition, so this field is no longer required.",
+      "minItems": 0,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "required": ["entity_id", "candidate_category_ids"],
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "type": "string",
+            "pattern": "^E[0-9]{3}$"
+          },
+          "candidate_category_ids": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "pattern": "^C[0-9]{2}$"
+            }
+          }
+        }
+      }
+    },
+    "entity_blocks": {
+      "type": "array",
+      "description": "Blocks of entities assigned to subsets of respondents. Each respondent sees one block.",
+      "minItems": 4,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["block_id", "entity_ids"],
+        "additionalProperties": false,
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "pattern": "^B[0-9]{1,2}$",
+            "description": "Unique block identifier (B1-B6)."
+          },
+          "entity_ids": {
+            "type": "array",
+            "description": "Entity IDs assigned to this block.",
+            "minItems": 30,
+            "maxItems": 40,
+            "items": {
+              "type": "string",
+              "pattern": "^E[0-9]{3}$"
+            }
+          }
+        }
+      }
+    },
+    "n_factor": {
+      "type": "integer",
+      "minimum": 20,
+      "maximum": 100,
+      "description": "Number of synthetic respondents to generate."
+    },
+    "expertise_distribution": {
+      "type": "object",
+      "description": "Target distribution of respondents across expertise tiers.",
+      "required": ["casual", "professional", "insider"],
+      "additionalProperties": false,
+      "properties": {
+        "casual": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 0.6,
+          "description": "Proportion of casual-tier respondents (default 0.40)."
+        },
+        "professional": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 0.6,
+          "description": "Proportion of professional-tier respondents (default 0.40)."
+        },
+        "insider": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 0.4,
+          "description": "Proportion of insider-tier respondents (default 0.20)."
+        }
+      }
+    }
+  }
+}

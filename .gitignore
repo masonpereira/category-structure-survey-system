@@ -1,0 +1,26 @@
+# Generated outputs
+output/*.json
+output/*.txt
+output/*.md
+output/responses/
+output/persona_synthesis/
+output/csv/
+
+# Keep output directory structure
+!output/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo

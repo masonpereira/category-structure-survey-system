@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Refinement Configuration",
+  "description": "Configuration for partial reruns of the category structure survey pipeline.",
+  "type": "object",
+  "required": ["mode", "retain_artifacts", "rebuild_from_stage"],
+  "additionalProperties": false,
+  "properties": {
+    "mode": {
+      "type": "string",
+      "const": "partial_rerun"
+    },
+    "retain_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "instrument_registry.json",
+          "personas.json",
+          "responses",
+          "aggregated_results.json",
+          "analysis.json"
+        ]
+      },
+      "description": "Artifacts from prior run to preserve."
+    },
+    "rebuild_from_stage": {
+      "type": "string",
+      "enum": [
+        "BUILD_PERSONAS",
+        "ADMINISTER_SURVEY",
+        "AGGREGATE_DATA",
+        "ANALYZE",
+        "WRITE_REPORT"
+      ],
+      "description": "Stage from which to restart the pipeline."
+    },
+    "adjustments": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "expertise_rebalance": {
+          "type": "object",
+          "description": "Override expertise distribution for persona regeneration.",
+          "properties": {
+            "casual": { "type": "number" },
+            "professional": { "type": "number" },
+            "insider": { "type": "number" }
+          }
+        },
+        "exclude_personas": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^R[0-9]{3}$" },
+          "description": "Persona IDs to exclude on rerun."
+        },
+        "n_factor_change": {
+          "type": "integer",
+          "description": "New n_factor (overrides domain_config)."
+        },
+        "block_reassignment": {
+          "type": "boolean",
+          "description": "Whether to reassign personas to different blocks."
+        },
+        "analysis_focus": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "consensus_taxonomy_tree",
+              "entity_placement_map",
+              "micro_monopoly_dictionary",
+              "awareness_rankings",
+              "depth_map",
+              "expertise_divergence_report",
+              "recognition_gap_analysis",
+              "cct_analysis"
+            ]
+          },
+          "description": "Deliverables to emphasize on reanalysis."
+        },
+        "additional_instructions": {
+          "type": "string",
+          "description": "Free-text guidance for the rerun."
+        }
+      }
+    }
+  }
+}
