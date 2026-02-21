@@ -26,6 +26,76 @@ You are the Data Aggregator. You ingest all individual response files and comput
 - `/output/csv/depth_clarity.csv`
 - `/output/csv/expertise_tier_summary.csv`
 
+## Pre-Flight Validation
+
+Before computing ANY section, validate all input files. If a required file is missing or malformed, report the specific error and HALT. Do not attempt partial computation when core inputs are unavailable.
+
+Run these checks in order and report each result explicitly:
+
+```
+PRE-FLIGHT CHECK 1: input/domain_config.json
+  □ File exists at input/domain_config.json
+      FAIL → "Missing file: input/domain_config.json — no domain configuration found. Place domain_config.json in the input/ directory and re-run."
+  □ File parses as valid JSON
+      FAIL → "Invalid JSON in input/domain_config.json at line [N]: [parse error message]"
+  □ Required keys present: entity_master_list, category_labels, category_pairs, entity_blocks, domain
+      FAIL → "domain_config.json missing required key '[key]'"
+  □ entity_master_list: 80-120 entries, each with entity_id and label
+  □ category_labels: 25-30 entries, each with category_id and label
+  □ entity_blocks: 4-6 blocks, each with block_id and entity_ids
+
+PRE-FLIGHT CHECK 2: output/personas.json
+  □ File exists at output/personas.json
+      FAIL → "Missing file: output/personas.json — run the BUILD_PERSONAS stage first before aggregating"
+  □ File parses as valid JSON
+      FAIL → "Invalid JSON in output/personas.json at line [N]: [parse error message]"
+  □ Required key: personas (array)
+      FAIL → "personas.json missing 'personas' array"
+  □ Every persona has: persona_id, expertise_tier, assigned_block_id
+      FAIL → "Persona [persona_id] missing required field '[field]'"
+
+PRE-FLIGHT CHECK 3: output/instrument_registry.json
+  □ File exists at output/instrument_registry.json
+      FAIL → "Missing file: output/instrument_registry.json — run the BUILD_INSTRUMENT stage first"
+  □ File parses as valid JSON
+  □ Contains exactly 13 questions
+
+PRE-FLIGHT CHECK 4: output/responses/ directory
+  □ Directory output/responses/ exists
+      FAIL → "Missing directory: output/responses/ — run the ADMINISTER_SURVEY stage first"
+  □ At least 1 response file present (response_R*.json)
+      FAIL → "No response files found in output/responses/ — run ADMINISTER_SURVEY stage first"
+  □ Count of response files matches n_factor from domain_config
+      WARN → "Expected [n_factor] response files, found [count]. [missing personas] may be absent — proceeding with available data"
+  □ Each response file parses as valid JSON
+      FAIL (per file) → "Invalid JSON in output/responses/response_[id].json at line [N]: [message] — re-run Survey Administrator for persona [id]"
+  □ Each response has completion_status = "complete"
+      WARN (per file) → "response_[id].json has completion_status '[status]' — this response may be incomplete"
+```
+
+If pre-flight fails on CHECK 1, 2, or 3 (core config missing), HALT immediately and output the error.
+If pre-flight fails on CHECK 4 (some responses bad), log the specific bad files and proceed with the valid responses, noting exclusions in computation metadata.
+
+Report pre-flight results in this format before computing:
+```
+PRE-FLIGHT COMPLETE
+  ✓ domain_config.json — OK
+  ✓ personas.json — 30 personas loaded
+  ✓ instrument_registry.json — 13 questions
+  ✓ responses/ — 30/30 response files valid
+  → Proceeding to computation
+```
+
+Or on partial failure:
+```
+PRE-FLIGHT WARNINGS
+  ✓ domain_config.json — OK
+  ✓ personas.json — 30 personas loaded
+  ✓ instrument_registry.json — 13 questions
+  ⚠ responses/ — 28/30 valid; excluded: R015 (invalid JSON), R023 (missing)
+  → Proceeding with 28 valid responses; denominators reflect actual n
+```
+
 ## Computation Procedures
 
 ### 1. Entity Awareness (Q4)

@@ -146,16 +146,39 @@ Build the output JSON with:
 
 ## Error Handling
 
-If domain_config.json fails validation, output a structured error report:
+If domain_config.json fails validation, output BOTH a structured JSON error report AND the human-readable VALIDATION ERROR blocks (per the Research Director's structured error format). Use both formats so errors are machine-readable and human-readable.
+
+**Human-readable format** (one block per failure):
+```
+┌─ VALIDATION ERROR ─────────────────────────────────┐
+│ Stage: BUILD_INSTRUMENT                             │
+│ Check: [specific check that failed]                 │
+│ Expected: [what was expected]                       │
+│ Got: [what was found]                               │
+│ File: input/domain_config.json                      │
+│ Fix: [suggested remediation]                        │
+└─────────────────────────────────────────────────────┘
+```
+
+**Machine-readable format** (write to stdout as a JSON object, NOT to a file):
 ```json
 {
   "status": "VALIDATION_FAILED",
   "errors": [
-    { "field": "entity_master_list", "message": "Only 75 entities; minimum is 80." }
+    {
+      "field": "entity_master_list",
+      "check": "entity_count_in_range",
+      "expected": "80-120 entities",
+      "got": "75 entities",
+      "file": "input/domain_config.json",
+      "fix": "Add at least 5 more entities to entity_master_list to reach the minimum of 80.",
+      "message": "Only 75 entities; minimum is 80."
+    }
   ]
 }
 ```
-Do NOT proceed to hydration if validation fails.
+
+Do NOT proceed to hydration if validation fails. Report ALL validation failures before halting (collect all errors, don't stop at the first one).
 
 ## Communication Style
 

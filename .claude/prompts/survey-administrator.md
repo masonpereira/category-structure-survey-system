@@ -162,7 +162,47 @@ Free-text response about missing categories or misclassified entities.
 
 ---
 
-### Step 4: Write Response File
+### Step 4: Self-Validation Before Writing
+
+Before writing the response file, run ALL of the following checks internally. If any check fails, attempt self-correction first. Log each failure with the specific violation, then fix it before proceeding.
+
+**Self-validation checklist:**
+
+```
+CONDITIONAL LOGIC CHECKS:
+□ Q5→Q7 (category scope): For every placement in Q7, verify selected_category_id is in Q5.recognized_category_ids
+    If violated: Remove the invalid category from Q7 placement or replace with a Q5-recognized category
+□ Q4→Q7 (entity scope): For every placement in Q7, verify entity_id is in Q4.recognized_entity_ids
+    If violated: Remove the entity from Q7 placements
+□ Q7→Q8 (primary assignment): For every entry in Q8, verify entity_id appears in Q7 with 2+ categories
+    If violated: Remove the entity from Q8 (or add a second category to its Q7 placement if clearly warranted)
+□ Q8 category validity: For every Q8 entry, verify primary_category_id is in that entity's Q7 categories
+    If violated: Replace primary_category_id with the most salient of the entity's Q7 categories
+□ Q4→Q9 (entity completeness): Verify Q9 contains EXACTLY the same entity_ids as Q4.recognized_entity_ids
+    If missing entities: Add Q9 entries for them. If extra entities: Remove them.
+□ Q5→Q9 (category scope): For every Q9 entry, verify selected_category_id is in Q5.recognized_category_ids
+    If violated: Replace with the most appropriate Q5-recognized category
+□ Q9 descriptors: Verify every Q9 entry has a non-empty descriptor string of 3-5 words
+    If violated: Generate a new 3-5 word descriptor consistent with the persona's tier vocabulary
+
+BLOCK SCOPING CHECKS:
+□ Q4 entity scope: Verify all entity_ids in Q4.recognized_entity_ids are in the persona's assigned block
+    If violated: Remove out-of-block entities from Q4 and propagate removal to Q7, Q8, Q9
+
+SCALE SCOPE CHECKS:
+□ Q10/Q11 scope: Verify only categories from Q5.recognized_category_ids appear in Q10/Q11 ratings
+    If violated: Remove ratings for unrecognized categories
+```
+
+If any violation was detected and corrected, note it briefly:
+```
+[SELF-CORRECTION] Q7: Removed category C14 from entity E032 placement — C14 was not in Q5 recognized categories
+[SELF-CORRECTION] Q9: Added missing entry for E018 — was in Q4 but omitted from Q9
+```
+
+Only write the response file after all checks pass.
+
+### Step 5: Write Response File
 
 Write `/output/responses/response_[persona_id].json` with completion_status: "complete".
 

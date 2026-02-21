@@ -118,16 +118,78 @@ BUILD_INSTRUMENT → BUILD_PERSONAS → ADMINISTER_SURVEY → AGGREGATE_DATA →
 - [ ] Every entity leaf in D3 tree has `descriptor` and `consensus_strength`
 - [ ] Micro-monopoly table in report includes Descriptor and Desc. Consensus columns
 
+## Structured Error Format
+
+All validation failures MUST use this exact format when reporting errors. This applies to every stage gate and every retry context:
+
+```
+┌─ VALIDATION ERROR ─────────────────────────────────┐
+│ Stage: [STAGE_NAME]                                 │
+│ Check: [specific check that failed]                 │
+│ Expected: [what was expected]                       │
+│ Got: [what was found]                               │
+│ File: [which file has the problem]                  │
+│ Fix: [suggested remediation]                        │
+└─────────────────────────────────────────────────────┘
+```
+
+Use one block per distinct failure. When retrying, prepend ALL error blocks to the agent's prompt verbatim so the agent knows exactly what to fix.
+
 ## Execution Protocol
 
 1. **Read domain_config.json** to extract n_factor and domain metadata
 2. **Execute stages 1-6 sequentially** — NEVER in parallel
 3. **After each stage**, run the validation gate
 4. **On validation failure**:
-   - Log the specific failure(s)
-   - Retry the stage ONCE with error context appended to the agent prompt
-   - If retry fails, HALT pipeline with diagnostic report
+   - Format each failed check as a VALIDATION ERROR block (see above)
+   - Log all failures
+   - Retry the stage ONCE with all error blocks prepended to the agent prompt
+   - If retry also fails, HALT pipeline and write `pipeline_diagnostic.json` to `/output/`
 5. **On success**: proceed to next stage
+
+## pipeline_diagnostic.json on Retry Failure
+
+When any stage fails BOTH its initial attempt AND its retry, write `/output/pipeline_diagnostic.json` before halting. This file must conform to `/schemas/pipeline_diagnostic.schema.json`. Structure:
+
+```json
+{
+  "pipeline_run_id": "<ISO 8601 timestamp>",
+  "domain": "<domain name from domain_config.json>",
+  "stages": {
+    "BUILD_INSTRUMENT": {
+      "status": "pass|fail|skipped|retried_pass|retried_fail",
+      "checks": [
+        {
+          "name": "file_exists",
+          "status": "pass|fail|warn|skipped",
+          "detail": "Human-readable description of what was found",
+          "expected": "What was expected (for failures)",
+          "got": "What was actually found (for failures)",
+          "file": "output/instrument_registry.json",
+          "fix": "Suggested remediation"
+        }
+      ],
+      "retry_attempted": true,
+      "duration_seconds": null,
+      "error_context_sent_to_agent": "Full error context string sent on retry"
+    }
+  },
+  "summary": {
+    "total_checks": 45,
+    "passed": 43,
+    "failed": 2,
+    "warned": 0,
+    "pipeline_halted": true,
+    "halt_reason": "BUILD_INSTRUMENT failed after 1 retry",
+    "errors": [
+      "BUILD_INSTRUMENT:json_valid — Invalid JSON at line 45",
+      "BUILD_INSTRUMENT:question_count — Expected 13, got 12"
+    ]
+  }
+}
+```
+
+Populate only the stages that were attempted. Omit stages that were never reached.
 
 ## Refinement Run Protocol
 
@@ -145,9 +207,17 @@ After each stage, output a status line:
 [STAGE_NAME] ✓ completed — [brief summary]
 ```
 
-On failure:
+On failure (use VALIDATION ERROR blocks per the Structured Error Format above):
 ```
 [STAGE_NAME] ✗ FAILED — [specific error]
+┌─ VALIDATION ERROR ─────────────────────────────────┐
+│ Stage: [STAGE_NAME]                                 │
+│ Check: [check name]                                 │
+│ Expected: [expected]                                │
+│ Got: [actual]                                       │
+│ File: [file]                                        │
+│ Fix: [remediation]                                  │
+└─────────────────────────────────────────────────────┘
 [STAGE_NAME] ⟳ RETRY 1/1 — [error context]
 ```
 
